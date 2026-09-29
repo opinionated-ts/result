@@ -10,10 +10,15 @@
     "LICENSE"
   ],
   "type": "module",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
+    "build": "tsdown",
     "cspell": "cspell lint .",
     "fmt": "oxfmt --check .",
     "fmt:fix": "oxfmt .",
@@ -31,6 +36,7 @@
     "@types/bun": "^1.4.0",
     "@types/node": "^26.2.0",
     "@vitest/coverage-istanbul": "5.0.1",
+    "tsdown": "^0.23.0",
     "vitest": "^5.0.1"
   },
   "peerDependencies": {
