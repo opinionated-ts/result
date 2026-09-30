@@ -1,4 +1,9 @@
 {
   "extends": "@opinionated-ts/config/tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
   "include": ["src", "tests", "*.config.*"]
 }
