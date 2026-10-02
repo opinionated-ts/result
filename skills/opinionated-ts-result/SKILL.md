@@ -1,6 +1,6 @@
 ---
 name: opinionated-ts-result
-description: "Use when implementing, reviewing, or explaining TypeScript code with @opinionated-ts/result, including typed Results, ok/error, isSuccess/isFailure, failure propagation, and exhaustive error handling."
+description: "Use when implementing, reviewing, or explaining TypeScript code with `@opinionated-ts/result` for handling errors as typed values instead of throwing, including `ok`, `error`, `isSuccess`, `isFailure`, failure propagation, and exhaustive error handling."
 ---
 
 # @opinionated-ts/result
@@ -202,6 +202,8 @@ boundary
 exhaustive handling
 ```
 
-## Related
+## Related & Optionally
 
-## For typed error creation and reusable error definitions, optionally pair `@opinionated-ts/result` with `@opinionated-ts/error-factory`.
+Optionally, see the [`@opinionated-ts/result`](https://github.com/opinionated-ts/result) repository for more in-depth guidance about the package, only if this skill does not answer your question or you need additional details.
+
+For typed errors with exact, automatic type inference, optionally pair `@opinionated-ts/result` with `@opinionated-ts/error-factory` when available.
