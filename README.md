@@ -55,21 +55,19 @@ From outside the function, TypeScript can infer the complete contract:
 const result = getUser(id);
 ```
 
-Hovering `result` shows that it can contain either the successful `User` value or one of the concrete failures returned by `getUser()`.
+In editors like **VS Code**, a **mouse hover** over `result` can show that it contains either the successful `User` value or one of the concrete failures returned by `getUser()`.
 
 The caller does not need to inspect the implementation to discover what can go wrong.
 
 ### No Manual Result Annotations
 
-The contract comes directly from the values returned by `ok()` and `error()`.
+The contract comes directly from the values returned by `ok()` and `error()`:
 
 ```ts
 function getUser(id: string) {
   // ...
 }
 ```
-
-There is no need to manually maintain a `Result<User, ...>` annotation that can drift away from the implementation.
 
 As the function changes, its inferred contract changes with it.
 
@@ -96,9 +94,9 @@ switch (result.error.code) {
 }
 ```
 
-If `getUser()` later starts returning another concrete failure, the exhaustive check no longer satisfies `never`.
+With the failure `code` preserved as a literal value (for example, with `readonly`), pressing **Ctrl + Space** in VS Code can suggest the concrete codes available for the `switch`.
 
-The compiler can therefore surface a new failure path at the code responsible for handling the result instead of allowing it to pass unnoticed.
+If `getUser()` later starts returning another failure, that new possibility becomes part of the inferred contract. The exhaustive check then stops satisfying `never`, giving the compiler a chance to surface the new case instead of letting it pass unnoticed.
 
 ### Keep Contracts Precise Across Layers
 
