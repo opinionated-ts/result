@@ -65,7 +65,7 @@ The contract comes directly from the values returned by `ok()` and `error()`:
 
 ```ts
 function getUser(id: string) {
-  // ...
+  // return ok(...) or error(...)
 }
 ```
 
