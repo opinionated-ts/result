@@ -127,4 +127,4 @@ The same result can instead become a CLI exit code, UI state, message, or anothe
 
 ## Next steps
 
-- [Getting Started](./getting-started.md) — install the package and learn the core Result pattern.
+- [Install the `opinionated-ts-result` skill](https://github.com/opinionated-ts/result/tree/main/skills) — add package-specific guidance to your coding agent.
