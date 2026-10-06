@@ -1,7 +1,7 @@
 import { UnknownError, type UnknownErrorType } from "@/errors/unknown";
 
 // oxlint-disable-next-line no-unused-vars - used by tsdoc
-import type { Failure, Success, Result } from "./types";
+import type { Failure, Success, Result, ResultError, ExactCode } from "./types";
 
 import { isFailure } from "./guards";
 import { normalizeResult } from "./normalize";
@@ -70,8 +70,9 @@ export function failure<E extends Error>(error_: E): Failure<E> {
  * error(error(new Error("failed")));
  * // => { ok: false, error: Error("failed") }
  */
-export function error<E extends Error>(cause: Failure<E>): Failure<E>;
-export function error<E extends Error>(cause: E): Failure<E>;
+
+export function error<E extends ResultError>(cause: Failure<E>): Failure<E>;
+export function error<E extends ResultError>(cause: ExactCode<E>): Failure<E>;
 export function error(cause: unknown): Failure<UnknownErrorType>;
 export function error(cause: unknown): Failure {
   if (isFailure(cause)) {

@@ -57,3 +57,31 @@ export type Normalize<T> =
  * @typeParam T - Type to normalize.
  */
 export type NormalizedResult<T> = Normalize<T>;
+
+/**
+ * Error shape required by {@link error} for typed result failures.
+ *
+ * The `code` property is constrained to a string so the constructor can
+ * preserve literal error codes in its return type.
+ */
+export type ResultError = Error & {
+  readonly code: string;
+};
+
+/**
+ * Fallback type used when an error exposes a widened `string` code instead of
+ * a string literal.
+ */
+type ErrorCodeMustBeLiteralString = {
+  readonly code: never;
+};
+
+/**
+ * Preserves an error type only when its `code` property is a string literal.
+ *
+ * A widened `string` code resolves to {@link ErrorCodeMustBeLiteralString},
+ * preventing the constructor from losing the exact error-code contract.
+ */
+export type ExactCode<E extends ResultError> = string extends E["code"]
+  ? ErrorCodeMustBeLiteralString
+  : E;
