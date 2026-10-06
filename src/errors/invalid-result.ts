@@ -1,16 +1,20 @@
-import { createError } from "@opinionated-ts/error-factory";
+export const INVALID_RESULT_ERROR_CODE = "INVALID_RESULT_ERROR" as const;
 
-export const INVALID_RESULT_ERROR_CODE = "INVALID_RESULT_ERROR";
+export const INVALID_RESULT_ERROR_MESSAGE =
+  "The provided value is not a valid Result error. It must extend Error and have an explicitly typed literal code." as const;
 
-export const InvalidResultError = createError({
-  name: "InvalidResultError",
-  defaults: {
-    message:
-      "The provided value is not a valid Result error. It must extend Error and have an explicitly typed literal code.",
-  },
-  fixed: {
-    code: INVALID_RESULT_ERROR_CODE,
-  },
-});
+export class InvalidResultError extends Error {
+  override readonly name = "InvalidResultError";
+  override readonly message = INVALID_RESULT_ERROR_MESSAGE;
+  readonly code = INVALID_RESULT_ERROR_CODE;
 
-export type InvalidResultErrorType = ReturnType<typeof InvalidResultError>;
+  constructor(options?: ErrorOptions) {
+    super(INVALID_RESULT_ERROR_MESSAGE, options);
+  }
+}
+
+export type InvalidResultErrorType = {
+  readonly name: "InvalidResultError";
+  readonly code: typeof INVALID_RESULT_ERROR_CODE;
+  readonly message: typeof INVALID_RESULT_ERROR_MESSAGE;
+} & Error;

@@ -85,7 +85,7 @@ export function error(cause: unknown): Failure {
     return failure(cause);
   }
 
-  return failure(InvalidResultError({ cause }));
+  return failure(new InvalidResultError({ cause }));
 }
 
 /**

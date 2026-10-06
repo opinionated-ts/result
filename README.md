@@ -11,6 +11,8 @@ The important part is not the `Result` shape. It is the contract it gives the ca
 
 > ❤️ If you find this project useful, consider giving the repo a star — it helps support the project.
 
+`@opinionated-ts/result` is intentionally designed as a smaller alternative to libraries such as [neverthrow](https://github.com/supermacro/neverthrow). It has no runtime dependencies and keeps its core API as small as possible, focusing only on making operation outcomes explicit and precisely typed.
+
 ## Why
 
 With thrown errors, a function's return type tells you what happens when it succeeds, but not which failures can occur.
