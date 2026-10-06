@@ -1,15 +1,16 @@
 import { createError } from "@opinionated-ts/error-factory";
 
-export const UNKNOWN_ERROR_CODE = "UNKNOWN_ERROR";
+export const INVALID_RESULT_ERROR_CODE = "INVALID_RESULT_ERROR";
 
-export const UnknownError = createError({
-  name: "UnknownError",
+export const InvalidResultError = createError({
+  name: "InvalidResultError",
   defaults: {
-    message: "An unknown error occurred",
+    message:
+      "The provided value is not a valid Result error. It must extend Error and have an explicitly typed literal code.",
   },
   fixed: {
-    code: UNKNOWN_ERROR_CODE,
+    code: INVALID_RESULT_ERROR_CODE,
   },
 });
 
-export type UnknownErrorType = ReturnType<typeof UnknownError>;
+export type InvalidResultErrorType = ReturnType<typeof InvalidResultError>;

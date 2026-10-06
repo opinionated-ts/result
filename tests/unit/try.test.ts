@@ -62,7 +62,7 @@ describe("tryResult", () => {
     }
   });
 
-  it("should convert a non-Error throw into UnknownError", () => {
+  it("should convert a non-Error throw into InvalidResultError", () => {
     const result = tryResult(() => {
       throw "failed";
     });
@@ -70,7 +70,7 @@ describe("tryResult", () => {
     expect(result.ok).toBe(false);
 
     if (!result.ok) {
-      expect(result.error.name).toBe("UnknownError");
+      expect(result.error.name).toBe("InvalidResultError");
       expect(result.error.cause).toBe("failed");
     }
   });
@@ -113,7 +113,7 @@ describe("tryResultAsync", () => {
     }
   });
 
-  it("should convert a rejected non-Error value into UnknownError", async () => {
+  it("should convert a rejected non-Error value into InvalidResultError", async () => {
     const result = await tryResultAsync(async () => {
       throw "failed";
     });
@@ -121,7 +121,7 @@ describe("tryResultAsync", () => {
     expect(result.ok).toBe(false);
 
     if (!result.ok) {
-      expect(result.error.name).toBe("UnknownError");
+      expect(result.error.name).toBe("InvalidResultError");
       expect(result.error.cause).toBe("failed");
     }
   });

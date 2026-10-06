@@ -1,4 +1,8 @@
-export { UnknownError, UNKNOWN_ERROR_CODE, type UnknownErrorType } from "./errors/unknown";
+export {
+  InvalidResultError,
+  INVALID_RESULT_ERROR_CODE,
+  type InvalidResultErrorType,
+} from "./errors/invalid-result";
 
 export { error, failure, success, ok } from "./constructors";
 

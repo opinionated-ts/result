@@ -57,14 +57,14 @@ describe("results constructors", () => {
       }
     });
 
-    it("should wrap non-Error causes in UnknownError", () => {
+    it("should wrap non-Error causes in InvalidResultError", () => {
       const result = error("failed");
 
       expect(result.ok).toBe(false);
 
       if (!result.ok) {
         expect(result.error).toBeInstanceOf(Error);
-        expect(result.error.name).toBe("UnknownError");
+        expect(result.error.name).toBe("InvalidResultError");
       }
     });
 

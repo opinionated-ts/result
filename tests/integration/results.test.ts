@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { UnknownError, UNKNOWN_ERROR_CODE } from "@/errors/unknown";
+import { InvalidResultError, INVALID_RESULT_ERROR_CODE } from "@/errors/invalid-result";
 import {
   error,
   failure,
@@ -89,8 +89,8 @@ describe("results integration", () => {
     expect(isFailure(result)).toBe(true);
 
     if (isFailure(result)) {
-      expect(result.error).toBeInstanceOf(UnknownError);
-      expect(result.error.code).toBe(UNKNOWN_ERROR_CODE);
+      expect(result.error).toBeInstanceOf(InvalidResultError);
+      expect(result.error.code).toBe(INVALID_RESULT_ERROR_CODE);
       expect(result.error.cause).toEqual({
         reason: "invalid input",
       });
@@ -149,7 +149,7 @@ describe("results integration", () => {
     expect(isFailure(result)).toBe(true);
 
     if (isFailure(result)) {
-      expect(result.error).toBeInstanceOf(UnknownError);
+      expect(result.error).toBeInstanceOf(InvalidResultError);
       expect(result.error.cause).toBe(123);
     }
   });

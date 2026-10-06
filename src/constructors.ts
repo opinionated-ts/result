@@ -1,4 +1,4 @@
-import { UnknownError, type UnknownErrorType } from "@/errors/unknown";
+import { InvalidResultError, type InvalidResultErrorType } from "@/errors/unknown";
 
 // oxlint-disable-next-line no-unused-vars - used by tsdoc
 import type { Failure, Success, Result, ResultError, ExactCode } from "./types";
@@ -52,7 +52,7 @@ export function failure<E extends Error>(error_: E): Failure<E> {
  *
  * - Existing {@link Failure} values are preserved as-is.
  * - `Error` values are preserved as-is.
- * - Anything else is wrapped in a {@link UnknownError}, keeping the original
+ * - Anything else is wrapped in a {@link InvalidResultError}, keeping the original
  *   value in its `cause` property.
  *
  * Designed for `catch` blocks; used internally by {@link tryResult} and
@@ -65,7 +65,7 @@ export function failure<E extends Error>(error_: E): Failure<E> {
  * // => { ok: false, error: Error("failed") }
  *
  * error("failed");
- * // => { ok: false, error: UnknownError { cause: "failed" } }
+ * // => { ok: false, error: InvalidResultError { cause: "failed" } }
  *
  * error(error(new Error("failed")));
  * // => { ok: false, error: Error("failed") }
@@ -73,7 +73,7 @@ export function failure<E extends Error>(error_: E): Failure<E> {
 
 export function error<E extends ResultError>(cause: Failure<E>): Failure<E>;
 export function error<E extends ResultError>(cause: ExactCode<E>): Failure<E>;
-export function error(cause: unknown): Failure<UnknownErrorType>;
+export function error(cause: unknown): Failure<InvalidResultErrorType>;
 export function error(cause: unknown): Failure {
   if (isFailure(cause)) {
     return cause;
@@ -83,7 +83,7 @@ export function error(cause: unknown): Failure {
     return failure(cause);
   }
 
-  return failure(UnknownError({ cause }));
+  return failure(InvalidResultError({ cause }));
 }
 
 /**

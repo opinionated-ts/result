@@ -7,7 +7,7 @@ import { normalizeResult } from "./normalize";
  * - Returns → normalized with {@link normalizeResult} (an existing {@link Result}
  *   is preserved).
  * - Throws → converted with `error()`: `Error` preserved, anything else wrapped
- *   in a {@link UnknownError}.
+ *   in a {@link InvalidResultError}.
  *
  * Safe wrapper around code that may throw.
  *
@@ -34,7 +34,7 @@ export function tryResult<T>(factory: () => T) {
  * - Resolves → normalized with {@link normalizeResult} (an existing {@link Result}
  *   is preserved).
  * - Rejects → converted with `error()`: `Error` preserved, anything else wrapped
- *   in a {@link UnknownError}.
+ *   in a {@link InvalidResultError}.
  *
  * @typeParam T - Type of the value resolved by `factory`.
  * @param factory - Async function to run.
