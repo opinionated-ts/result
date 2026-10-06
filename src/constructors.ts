@@ -1,4 +1,4 @@
-import { InvalidResultError, type InvalidResultErrorType } from "@/errors/unknown";
+import { InvalidResultError, type InvalidResultErrorType } from "@/errors/invalid-result";
 
 // oxlint-disable-next-line no-unused-vars - used by tsdoc
 import type { Failure, Success, Result, ResultError, ExactCode } from "./types";
@@ -51,7 +51,9 @@ export function failure<E extends Error>(error_: E): Failure<E> {
  * Creates a normalized {@link Failure} from any value.
  *
  * - Existing {@link Failure} values are preserved as-is.
- * - `Error` values are preserved as-is.
+ * - `Error` values are preserved as-is at runtime.
+ * - Typed error values must extend `Error` and expose an explicitly typed literal
+ *   `code`; a widened `string` code is rejected to preserve the exact contract.
  * - Anything else is wrapped in a {@link InvalidResultError}, keeping the original
  *   value in its `cause` property.
  *

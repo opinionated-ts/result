@@ -36,17 +36,47 @@ Do not explicitly annotate the return type as `Result<...>`.
 
 ## Typed errors
 
-Use `error()` with a concrete, intentionally typed `Error`:
+A value used as a **typed failure contract** with `error()` must extend `Error` and have an explicitly typed literal `code`. This preserves the exact discriminator in the inferred failure union.
 
 ```ts
-return error(new UserNotFoundError());
+class UserNotFoundError extends Error {
+  readonly code = "NOT_FOUND";
+}
+
+// Or a reusable error that preserves the literal code:
+class UserError<TCode extends string> extends Error {
+  readonly code: TCode;
+
+  constructor(code: TCode) {
+    super();
+    this.code = code;
+  }
+}
+
+error(new UserNotFoundError());
+error(new UserError("NOT_FOUND"));
 ```
 
-Do not expose generic causes directly:
+Do not pass an unknown or generic caught value as the expected failure:
 
 ```ts
-return error(cause);
+try {
+  // ...
+} catch (cause) {
+  return error(cause);
+}
 ```
+
+The diagnostic uses `ErrorCodeMustBeLiteralString` to indicate that the exact error code is required. A literal such as `"NOT_FOUND"`, or a finite literal union, keeps the error discriminator visible to consumers.
+
+At runtime, `error()` is also a normalization boundary:
+
+- Existing `Failure` values are preserved.
+- Existing `Error` values are preserved.
+- Non-Error values are wrapped in `InvalidResultError`.
+- The original non-Error value becomes the `cause` of `InvalidResultError`.
+
+This fallback is useful for unknown thrown values, but it should not replace a concrete expected error in an operation's public contract.
 
 Translate external or generic causes into the specific failure of the current operation:
 
@@ -167,8 +197,12 @@ switch (result.error.code) {
   case "BLOCKED":
     return Response.json(result, { status: 403 });
 
-  case "LOAD_FAILED":
-    return Response.json(result, { status: 500 });
+  case "INTERNAL_LOAD_FAILED": {
+    // Example of translating an internal failure at an application boundary.
+    logger(result.error);
+    const applicationError = new ApplicationLoadError("Unable to load user.");
+    return Response.json(error(applicationError), { status: 500 });
+  }
 
   default:
     result.error.code satisfies never;

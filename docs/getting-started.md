@@ -45,35 +45,29 @@ function validateUser(user: User) {
 }
 ```
 
-Both `ok()` and `error()` create `Result` values. TypeScript infers the concrete success and failure types from the values returned by the function.
+## Define typed failures
 
-Internally, a `Result` has two possible shapes:
-
-```ts
-type Result<T, E extends Error = Error> = { ok: true; value: T } | { ok: false; error: E };
-```
-
-You do not need to learn or use this type directly. It simply describes the mechanism that gives `Result` its type-safe behavior.
-
-For example, the `validateUser()` function above is inferred as a result with two possible outcomes:
+Failures passed to `error()` must be `Error` values with an explicitly typed, literal `code`. This preserves the exact failure discriminator:
 
 ```ts
-{
-  ok: true;
-  value: User;
+class UserNotFoundError extends Error {
+  readonly code = "NOT_FOUND";
 }
-```
 
-or:
+class UserError extends Error {
+  readonly code: string;
 
-```ts
-{
-  ok: false;
-  error: UserBlockedError;
+  constructor(code: string) {
+    super();
+    this.code = code;
+  }
 }
+
+error(new UserNotFoundError()); // valid
+error(new UserError("NOT_FOUND")); // TypeScript error
 ```
 
-The value passed to `ok()` determines the success type, while the value passed to `error()` determines the failure type. TypeScript combines those possibilities automatically into the function's return type.
+A widened `string` code is rejected because TypeScript can no longer determine the exact failure type. The diagnostic uses `ErrorCodeMustBeLiteralString` to indicate that the error code must remain literal.
 
 ## Consume a Result
 
@@ -91,11 +85,13 @@ if (isSuccess(result)) {
 return handleError(result.error);
 ```
 
-`isSuccess()` narrows to the success branch and `isFailure()` narrows to the failure branch.
+`isSuccess()` narrows to the success branch, while `isFailure()` narrows to the failure branch.
 
 ## Keep failures inside the contract
 
-For a function that returns `Result`, operation failures should be returned rather than thrown. When code called by the operation may throw, catch it and translate the cause into a concrete error:
+For a function that returns `Result`, expected operation failures should be returned rather than thrown.
+
+When code called by the operation may throw, catch it and translate the cause into a concrete typed error:
 
 ```ts
 class UserLoadFailedError extends Error {
@@ -121,7 +117,7 @@ async function loadUser(id: string) {
 }
 ```
 
-Do not expose the generic caught value as part of the function's failure contract:
+Do not expose the generic caught value as the operation's expected failure:
 
 ```ts
 try {
@@ -131,7 +127,9 @@ try {
 }
 ```
 
-Translate it into the specific failure that callers need to handle. This keeps the inferred error union concrete instead of widening it to an unknown or generic error.
+Translate caught values into the specific typed error that callers should handle. This keeps the inferred failure union concrete and meaningful.
+
+At runtime, `error()` preserves existing `Failure` and `Error` values. Non-`Error` values are wrapped in `InvalidResultError`, with the original value preserved as its `cause`.
 
 ## Next steps
 
