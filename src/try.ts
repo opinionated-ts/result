@@ -1,52 +1,143 @@
-import { error } from "./constructors";
-import { normalizeResult } from "./normalize";
+import type { ErrorMapper, ResultError } from "@/types";
+// oxlint-disable-next-line no-unused-vars - used by tsdoc
+import type { Failure, Result, Success } from "@/types";
+
+import { failure } from "@/constructors";
+import {
+  createInvalidResultError,
+  inheritCauseStack,
+  InvalidResultError,
+  isResultError,
+} from "@/errors/invalid-result";
+import { normalizeResult } from "@/normalize";
+
+export interface TryResultOptions {
+  /**
+   * When true, a mapped error inherits the stack of its original cause.
+   *
+   * Defaults to true.
+   */
+  readonly inheritStack?: boolean;
+}
 
 /**
- * Runs a synchronous factory, converting its outcome into a {@link Result}.
+ * Wraps a synchronous operation in a {@link Result}.
  *
- * - Returns → normalized with {@link normalizeResult} (an existing {@link Result}
- *   is preserved).
- * - Throws → converted with `error()`: `Error` preserved, anything else wrapped
- *   in a {@link InvalidResultError}.
+ * Use this when an operation can either return a value or throw an error:
+ * successful values become {@link Success} results, while thrown errors become
+ * {@link Failure} results.
  *
- * Safe wrapper around code that may throw.
+ * If `onError` is provided, it maps the thrown value to the typed error
+ * returned by the mapper. The mapper receives the original thrown value as
+ * `cause`, and its return type becomes the failure type of the resulting
+ * {@link Result}.
  *
- * @typeParam T - Type of the value returned by `factory`.
- * @param factory - Synchronous function to run.
- * @returns A {@link Success} with the normalized value, or a {@link Failure}
- * with the caught error.
+ * The mapped error must extend `Error` and expose an explicitly typed literal
+ * `code`. This preserves the exact error type in the resulting `Failure`.
+ *
+ * If `onError` is omitted, thrown values are represented by
+ * {@link InvalidResultError}.
+ *
+ * @param factory - Operation to execute.
+ * @param onError - Optional mapper that converts a thrown value into a typed
+ *   error.
+ * @param options - Optional behavior settings.
+ * @returns A {@link Result} containing the operation's success or failure.
+ *
  * @example
- * const result = tryResult(() => JSON.parse(input));
+ * const result = tryResult(
+ *   () => database.findUser(id),
+ *   (cause) => new UserLoadFailedError("Could not load user.", { cause }),
+ * );
+ *
+ * // Success<User> | Failure<UserLoadFailedError>
+ *
+ * @example
+ * const result = tryResult(() => database.findUser(id));
+ *
+ * // Success<User> | Failure<InvalidResultError>
  */
-export function tryResult<T>(factory: () => T) {
+export function tryResult<T, E extends ResultError = InvalidResultError>(
+  factory: () => T,
+  onError?: ErrorMapper<E>,
+  options: TryResultOptions = {},
+) {
   try {
     return normalizeResult(factory());
-  } catch (error_) {
-    return error(error_);
+  } catch (cause) {
+    const mappedError = onError?.(cause);
+
+    if (mappedError === undefined || !isResultError(mappedError)) {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion - runtime validation guarantees the ResultError contract
+      return failure(createInvalidResultError(cause, tryResult) as E);
+    }
+
+    if (options.inheritStack !== false) {
+      inheritCauseStack(mappedError, cause);
+    }
+
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion - runtime validation guarantees the ResultError contract
+    return failure(mappedError as E);
   }
 }
 
 /**
- * Runs an async factory, converting its outcome into a {@link Result}.
+ * Wraps an asynchronous operation in a {@link Result}.
  *
- * Same semantics as {@link tryResult}, but for promises:
+ * Use this when an operation can either resolve to a value or reject with an
+ * error: resolved values become {@link Success} results, while rejected errors
+ * become {@link Failure} results.
  *
- * - Resolves → normalized with {@link normalizeResult} (an existing {@link Result}
- *   is preserved).
- * - Rejects → converted with `error()`: `Error` preserved, anything else wrapped
- *   in a {@link InvalidResultError}.
+ * If `onError` is provided, it maps the rejected value to the typed error
+ * returned by the mapper. The mapper receives the original rejection value as
+ * `cause`, and its return type becomes the failure type of the resulting
+ * {@link Result}.
  *
- * @typeParam T - Type of the value resolved by `factory`.
- * @param factory - Async function to run.
- * @returns A promise of a {@link Success} with the normalized value, or a
- * {@link Failure} with the caught error.
+ * The mapped error must extend `Error` and expose an explicitly typed literal
+ * `code`. This preserves the exact error type in the resulting `Failure`.
+ *
+ * If `onError` is omitted, rejected values are represented by
+ * {@link InvalidResultError}.
+ *
+ * @param factory - Asynchronous operation to execute.
+ * @param onError - Optional mapper that converts a rejected value into a typed
+ *   error.
+ * @param options - Optional behavior settings.
+ * @returns A {@link Result} containing the operation's success or failure.
+ *
  * @example
- * const result = await tryResultAsync(() => fetch(url).then((r) => r.json()));
+ * const result = await tryResultAsync(
+ *   () => database.findUser(id),
+ *   (cause) => new UserLoadFailedError("Could not load user.", { cause }),
+ * );
+ *
+ * // Success<User> | Failure<UserLoadFailedError>
+ *
+ * @example
+ * const result = await tryResultAsync(() => database.findUser(id));
+ *
+ * // Success<User> | Failure<InvalidResultError>
  */
-export async function tryResultAsync<T>(factory: () => Promise<T>) {
+export async function tryResultAsync<T, E extends ResultError = InvalidResultError>(
+  factory: () => Promise<T>,
+  onError?: ErrorMapper<E>,
+  options: TryResultOptions = {},
+) {
   try {
     return normalizeResult(await factory());
-  } catch (error_) {
-    return error(error_);
+  } catch (cause) {
+    const mappedError = onError?.(cause);
+
+    if (mappedError === undefined || !isResultError(mappedError)) {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion - runtime validation guarantees the ResultError contract
+      return failure(createInvalidResultError(cause, tryResult) as E);
+    }
+
+    if (options.inheritStack !== false) {
+      inheritCauseStack(mappedError, cause);
+    }
+
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion - runtime validation guarantees the ResultError contract
+    return failure(mappedError as E);
   }
 }

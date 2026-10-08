@@ -85,3 +85,16 @@ type ErrorCodeMustBeLiteralString = {
 export type ExactCode<E extends ResultError> = string extends E["code"]
   ? ErrorCodeMustBeLiteralString
   : E;
+
+/**
+ * Maps a thrown or rejected value to a typed {@link ResultError}.
+ *
+ * The returned error must extend `Error` and expose an explicitly typed
+ * literal `code`, preserving the exact error type for the resulting
+ * {@link Failure}.
+ *
+ * @typeParam E - Type of the mapped {@link ResultError}.
+ * @param cause - Original value thrown or rejected by the operation.
+ * @returns A typed error representing the failure.
+ */
+export type ErrorMapper<E extends ResultError> = (cause: unknown) => ExactCode<E>;
