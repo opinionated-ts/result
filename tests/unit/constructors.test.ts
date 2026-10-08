@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { error, failure, ok, success } from "@/index";
 
-class CustomError extends Error {}
+class CustomError extends Error {
+  readonly code = "CUSTOM_ERROR";
+}
 
 describe("results constructors", () => {
   describe("success", () => {

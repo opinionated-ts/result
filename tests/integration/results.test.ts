@@ -68,7 +68,7 @@ describe("results integration", () => {
   });
 
   it("should compose ok, error and guards", () => {
-    const errorValue = new Error("failed");
+    const errorValue = new MissingThingError("failed");
     const result = ok(error(errorValue));
 
     expect(isFailure(result)).toBe(true);
@@ -97,12 +97,18 @@ describe("results integration", () => {
     }
   });
 
-  it("should preserve an existing Error through the complete try flow", () => {
-    const errorValue = new Error("database failed");
+  it("should preserve a typed Error through the complete try flow", () => {
+    const errorValue = new MissingThingError("database failed");
 
-    const result = tryResult(() => {
-      throw errorValue;
-    });
+    const result = tryResult(
+      () => {
+        throw errorValue;
+      },
+      (cause) => {
+        expect(cause).toBe(errorValue);
+        return errorValue;
+      },
+    );
 
     expect(isFailure(result)).toBe(true);
 
@@ -121,7 +127,7 @@ describe("results integration", () => {
   });
 
   it("should normalize an existing Failure returned by tryResult", () => {
-    const errorValue = new Error("failed");
+    const errorValue = new MissingThingError("failed");
 
     const result = tryResult(() => success(failure(errorValue)));
 
@@ -155,7 +161,7 @@ describe("results integration", () => {
   });
 
   it("should preserve native Error instances passed to error", () => {
-    const errorValue = new TypeError("invalid value");
+    const errorValue = new MissingThingError("invalid value");
 
     const result = error(errorValue);
 

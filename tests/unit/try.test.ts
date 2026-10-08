@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { tryResult, tryResultAsync } from "@/index";
 
-class CustomError extends Error {}
+class CustomError extends Error {
+  readonly code = "CUSTOM_ERROR";
+}
 
 describe("tryResult", () => {
   it("should return Success when the factory succeeds", () => {
@@ -48,7 +50,7 @@ describe("tryResult", () => {
     });
   });
 
-  it("should convert a thrown Error into a Failure", () => {
+  it("should convert a thrown Error without a mapper into InvalidResultError", () => {
     const errorValue = new CustomError("failed");
 
     const result = tryResult(() => {
@@ -58,7 +60,8 @@ describe("tryResult", () => {
     expect(result.ok).toBe(false);
 
     if (!result.ok) {
-      expect(result.error).toBe(errorValue);
+      expect(result.error.name).toBe("InvalidResultError");
+      expect(result.error.cause).toBe(errorValue);
     }
   });
 
@@ -99,7 +102,7 @@ describe("tryResultAsync", () => {
     });
   });
 
-  it("should convert a rejected Error into a Failure", async () => {
+  it("should convert a rejected Error without a mapper into InvalidResultError", async () => {
     const errorValue = new CustomError("failed");
 
     const result = await tryResultAsync(async () => {
@@ -109,7 +112,8 @@ describe("tryResultAsync", () => {
     expect(result.ok).toBe(false);
 
     if (!result.ok) {
-      expect(result.error).toBe(errorValue);
+      expect(result.error.name).toBe("InvalidResultError");
+      expect(result.error.cause).toBe(errorValue);
     }
   });
 

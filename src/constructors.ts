@@ -1,4 +1,8 @@
-import { InvalidResultError, type InvalidResultErrorType } from "@/errors/invalid-result";
+import {
+  InvalidResultError,
+  isResultError,
+  type InvalidResultErrorType,
+} from "@/errors/invalid-result";
 
 // oxlint-disable-next-line no-unused-vars - used by tsdoc
 import type { Failure, Success, Result, ResultError, ExactCode } from "./types";
@@ -81,7 +85,7 @@ export function error(cause: unknown): Failure {
     return cause;
   }
 
-  if (cause instanceof Error) {
+  if (isResultError(cause)) {
     return failure(cause);
   }
 

@@ -68,6 +68,7 @@ export function isResultError(value: unknown): value is ResultError {
  * @param cause - Original value thrown or rejected by the operation.
  */
 export function inheritCauseStack(error: Error, cause: unknown): void {
+  /* istanbul ignore else -- @preserve */
   if (cause instanceof Error && cause.stack !== undefined) {
     error.stack = cause.stack;
   }
