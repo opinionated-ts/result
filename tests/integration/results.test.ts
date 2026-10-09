@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { InvalidResultError, INVALID_RESULT_ERROR_CODE } from "@/errors/invalid-result";
 import {
   error,
   failure,
+  INVALID_RESULT_ERROR_CODE,
+  InvalidResultError,
   isFailure,
   isSuccess,
   ok,

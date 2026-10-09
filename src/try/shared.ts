@@ -1,17 +1,14 @@
-import type { ResultError } from "@/types";
+import type { ResultError } from "@/result/types";
 
-import { failure } from "@/constructors";
-import {
-  createInvalidResultError,
-  inheritCauseStack,
-  InvalidResultError,
-  isResultError,
-} from "@/errors/invalid-result";
-import { normalizeResult } from "@/normalize";
+import { inheritCauseStack } from "@/errors/error-stack";
+import { createInvalidResultError, InvalidResultError } from "@/errors/invalid-result";
+import { isResultError } from "@/errors/result-error";
+import { failure } from "@/result/constructors";
+import { normalizeResult } from "@/result/normalize";
 
 import type { Mapper, TryResultOptions } from "./types";
 
-import { isFailure } from "../guards";
+import { isFailure } from "../result/guards";
 
 /**
  * Creates the fallback error for a failure that cannot be represented by a

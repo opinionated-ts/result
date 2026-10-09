@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
-import type { Failure } from "@/types";
+import type { Failure } from "@/result/types";
 
 import { tryResult, tryResultAsync } from "@/index";
 

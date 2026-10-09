@@ -1,9 +1,12 @@
-import type { InvalidResultError } from "@/index";
-import type { Failure, Success } from "@/types";
-
-import { failure, success } from "@/constructors";
-import { isFailure } from "@/guards";
-import { tryResult } from "@/try";
+import {
+  failure,
+  InvalidResultError,
+  isFailure,
+  success,
+  tryResult,
+  type Failure,
+  type Success,
+} from "@/index";
 
 class DatabaseError extends Error {
   readonly code = "DATABASE_ERROR" as const;

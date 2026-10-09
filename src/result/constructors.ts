@@ -1,16 +1,15 @@
-import {
-  InvalidResultError,
-  isResultError,
-  type InvalidResultErrorType,
-} from "@/errors/invalid-result";
+import { InvalidResultError, type InvalidResultErrorType } from "@/errors/invalid-result";
+import { isResultError } from "@/errors/result-error";
+// oxlint-disable-next-line no-unused-vars - used by tsdoc
+import { tryResultAsync } from "@/try/async";
+// oxlint-disable-next-line no-unused-vars - used by tsdoc
+import { tryResult } from "@/try/sync";
 
 // oxlint-disable-next-line no-unused-vars - used by tsdoc
 import type { Failure, Success, Result, ResultError, ExactCode } from "./types";
 
 import { isFailure } from "./guards";
 import { normalizeResult } from "./normalize";
-// oxlint-disable-next-line no-unused-vars - used by tsdoc
-import { tryResult, tryResultAsync } from "./try";
 
 /**
  * Creates a {@link Success} result from `value`.

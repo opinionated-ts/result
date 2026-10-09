@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { InvalidResultError, INVALID_RESULT_ERROR_CODE } from "@/errors/invalid-result";
+import { INVALID_RESULT_ERROR_CODE, InvalidResultError } from "@/index";
 
 describe("InvalidResultError", () => {
   it("should extend Error", () => {

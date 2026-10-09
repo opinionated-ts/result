@@ -1,9 +1,14 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import type { Failure, Success } from "@/types";
-
-import { InvalidResultError } from "@/errors/invalid-result";
-import { failure, success, tryResult, tryResultAsync } from "@/index";
+import {
+  failure,
+  InvalidResultError,
+  success,
+  tryResult,
+  tryResultAsync,
+  type Failure,
+  type Success,
+} from "@/index";
 
 class DatabaseError extends Error {
   readonly code = "DATABASE_ERROR" as const;
@@ -119,19 +124,20 @@ describe("tryResult validation and precedence", () => {
 
   it("uses InvalidResultError when the mapper itself throws", () => {
     const cause = invalidError();
+    const maperError = new Error("mapper failed");
     const result = tryResult(
       () => {
         throw cause;
       },
       () => {
-        throw new Error("mapper failed");
+        throw maperError;
       },
     );
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error).toBeInstanceOf(InvalidResultError);
-      expect(result.error.cause).toBe(cause);
+      expect(result.error.cause).toBe(maperError);
     }
   });
 });

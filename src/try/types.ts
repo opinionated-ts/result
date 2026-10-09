@@ -1,5 +1,5 @@
 import type { InvalidResultError } from "@/errors/invalid-result";
-import type { Failure, Normalize, ResultError } from "@/types";
+import type { Failure, Normalize, ResultError } from "@/result/types";
 
 /** Configuration shared by {@link tryResult} and {@link tryResultAsync}. */
 export interface TryResultOptions {
