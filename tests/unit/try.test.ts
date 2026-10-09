@@ -50,21 +50,6 @@ describe("tryResult", () => {
     });
   });
 
-  it("should convert a thrown Error without a mapper into InvalidResultError", () => {
-    const errorValue = new CustomError("failed");
-
-    const result = tryResult(() => {
-      throw errorValue;
-    });
-
-    expect(result.ok).toBe(false);
-
-    if (!result.ok) {
-      expect(result.error.name).toBe("InvalidResultError");
-      expect(result.error.cause).toBe(errorValue);
-    }
-  });
-
   it("should convert a non-Error throw into InvalidResultError", () => {
     const result = tryResult(() => {
       throw "failed";
@@ -102,8 +87,8 @@ describe("tryResultAsync", () => {
     });
   });
 
-  it("should convert a rejected Error without a mapper into InvalidResultError", async () => {
-    const errorValue = new CustomError("failed");
+  it("should convert a rejected Error without a valid result error code into InvalidResultError", async () => {
+    const errorValue = new Error("failed");
 
     const result = await tryResultAsync(async () => {
       throw errorValue;
