@@ -5,17 +5,35 @@ import { processFailure, processReturned } from "./shared";
 /**
  * Wraps an asynchronous operation in a {@link Result}.
  *
- * Resolved values become success results, while rejected values become
- * failures. An optional mapper converts invalid failure values into typed
- * errors; if it throws, its error becomes the cause of an
- * {@link InvalidResultError}.
+ * Resolved values are normalized into {@link Success} results. Rejected
+ * values become {@link Failure} results, mapped to a typed error when possible.
  *
- * @typeParam T - Value type resolved by the operation.
+ * The mapped error must extend `Error` and expose an explicitly typed literal
+ * `code`, preserving its exact type in the resulting `Failure`.
+ *
+ * If `onError` is omitted or returns an invalid error, the failure is
+ * represented by {@link InvalidResultError}. If the mapper throws, its error
+ * becomes the cause of that `InvalidResultError`.
+ *
+ * @typeParam T - Value resolved by the operation.
  * @typeParam M - Optional mapper type used to infer the failure type.
  * @param factory - Asynchronous operation to execute.
- * @param onError - Optional mapper that converts a failure cause into a typed error.
+ * @param onError - Optional mapper that converts a rejection cause into a typed error.
  * @param options - Optional behavior settings.
- * @returns A promise resolving to the operation's result.
+ * @returns A promise resolving to a {@link Result} containing the operation's success or failure.
+ *
+ * @example
+ * const result = await tryResultAsync(
+ * () => database.findUser(id),
+ * (cause) => new UserLoadFailedError("Could not load user.", { cause }),
+ * );
+ *
+ * // Success<User> | Failure<UserLoadFailedError>
+ *
+ * @example
+ * const result = await tryResultAsync(() => database.findUser(id));
+ *
+ * // Success<User> | Failure<InvalidResultError>
  */
 export async function tryResultAsync<T, M extends Mapper | undefined = Mapper>(
   factory: () => Promise<T>,
