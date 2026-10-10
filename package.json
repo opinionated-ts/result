@@ -29,10 +29,11 @@
     "hooks:install": "lefthook install",
     "test": "vitest run",
     "test:watch": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "audit": "bun audit --ignore=1240992"
   },
   "devDependencies": {
-    "@opinionated-ts/config": "^1.8.10",
+    "@opinionated-ts/config": "^1.9.1",
     "@types/bun": "^1.4.0",
     "@types/node": "^26.2.0",
     "@vitest/coverage-istanbul": "5.0.1",
@@ -41,6 +42,9 @@
   },
   "peerDependencies": {
     "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "tinypool": "^2.2.0"
   },
   "engines": {
     "bun": "^1.4.0"
