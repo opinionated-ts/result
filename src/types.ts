@@ -1,11 +1,23 @@
+/** Detects \`any\` without widening other types. */
+type NonNullish = object | string | number | bigint | boolean | symbol;
+
+type IsAny<T> = 0 extends 1 & T ? true : false;
+
+/**
+ * Rejects failure payload types that cannot describe a concrete, non-nullish value.
+ * The tuple check treats unions as a whole instead of distributing over members.
+ */
+export type FailureValue<E> =
+  IsAny<E> extends true ? never : unknown extends E ? never : [E] extends [NonNullish] ? E : never;
+
 /**
  * The failed variant of a {@link Result}.
  *
- * Carries the `error` that caused the failure; `ok` is always `false`.
+ * Carries any concrete, non-nullish failure value; it does not have to be a JavaScript \`Error\`.
  *
- * @typeParam E - Error type, constrained to `Error`.
+ * @typeParam E - Type of the failure value.
  */
-export type Failure<E extends Error = Error> = {
+export type Failure<E = Error> = {
   error: E;
   ok: false;
 };
@@ -13,7 +25,7 @@ export type Failure<E extends Error = Error> = {
 /**
  * The successful variant of a {@link Result}.
  *
- * Carries the `value` produced on success; `ok` is always `true`.
+ * Carries the \`value\` produced on success; \`ok\` is always \`true\`.
  *
  * @typeParam T - Type of the successful value.
  */
@@ -25,26 +37,17 @@ export type Success<T> = {
 /**
  * Discriminated union representing the outcome of an operation.
  *
- * | Variant   | Discriminator | Payload   |
- * | --------- | ------------- | --------- |
- * | {@link Success} | `ok: true`  | `value`   |
- * | {@link Failure} | `ok: false` | `error`   |
- *
- * Narrow with the `ok` field, or with {@link isSuccess} / {@link isFailure}.
+ * Narrow with the \`ok\` field, or with {@link isSuccess} / {@link isFailure}.
  *
  * @typeParam T - Type of the value on success.
- * @typeParam E - Error type on failure, constrained to `Error`.
+ * @typeParam E - Type of the failure value.
  */
-export type Result<T, E extends Error = Error> = Failure<E> | Success<T>;
+export type Result<T, E = Error> = [FailureValue<E>] extends [never]
+  ? never
+  : Failure<E> | Success<T>;
 
 /**
  * Resolves the canonical {@link Result} shape of a possibly nested value.
- *
- * | Input                         | Output                  |
- * | ----------------------------- | ----------------------- |
- * | `Failure<E>`                  | `Failure<E>`            |
- * | `Success<T>`                  | `Normalize<T>`          |
- * | `T` (anything else)           | `Success<T>`            |
  *
  * @typeParam T - Type to normalize.
  */

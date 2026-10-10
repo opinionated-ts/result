@@ -1,13 +1,14 @@
 import { error } from "./constructors";
 import { normalizeResult } from "./normalize";
 
+type NonNullish = object | string | number | bigint | boolean | symbol;
+
 /**
  * Runs a synchronous factory, converting its outcome into a {@link Result}.
  *
  * - Returns → normalized with {@link normalizeResult} (an existing {@link Result}
  *   is preserved).
- * - Throws → converted with `error()`: `Error` preserved, anything else wrapped
- *   in a {@link UnknownError}.
+ * - Throws → preserved as the failure value.
  *
  * Safe wrapper around code that may throw.
  *
@@ -22,7 +23,8 @@ export function tryResult<T>(factory: () => T) {
   try {
     return normalizeResult(factory());
   } catch (error_) {
-    return error(error_);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Preserve arbitrary JavaScript thrown values; the public Result contract excludes nullish failures.
+    return error(error_ as NonNullish);
   }
 }
 
@@ -33,8 +35,7 @@ export function tryResult<T>(factory: () => T) {
  *
  * - Resolves → normalized with {@link normalizeResult} (an existing {@link Result}
  *   is preserved).
- * - Rejects → converted with `error()`: `Error` preserved, anything else wrapped
- *   in a {@link UnknownError}.
+ * - Rejects → preserved as the failure value.
  *
  * @typeParam T - Type of the value resolved by `factory`.
  * @param factory - Async function to run.
@@ -47,6 +48,7 @@ export async function tryResultAsync<T>(factory: () => Promise<T>) {
   try {
     return normalizeResult(await factory());
   } catch (error_) {
-    return error(error_);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Preserve arbitrary JavaScript thrown values; the public Result contract excludes nullish failures.
+    return error(error_ as NonNullish);
   }
 }

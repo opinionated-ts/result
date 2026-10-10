@@ -32,7 +32,7 @@ export function normalizeResult<T>(value: T): Normalize<T> {
     const inner = value.value;
 
     if (isFailure(inner)) {
-      return inner as Normalize<T>;
+      return inner as unknown as Normalize<T>;
     }
 
     if (isSuccess(inner)) {

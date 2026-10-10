@@ -1,16 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { UnknownError, UNKNOWN_ERROR_CODE } from "@/errors/unknown";
-import {
-  error,
-  failure,
-  isFailure,
-  isSuccess,
-  ok,
-  success,
-  tryResult,
-  tryResultAsync,
-} from "@/index";
+import { failure, success } from "@/constructors";
+import { error, isFailure, isSuccess, ok, tryResult, tryResultAsync } from "@/index";
 
 class MissingThingError extends Error {
   readonly code = "MISSING_THING";
@@ -89,11 +80,7 @@ describe("results integration", () => {
     expect(isFailure(result)).toBe(true);
 
     if (isFailure(result)) {
-      expect(result.error).toBeInstanceOf(UnknownError);
-      expect(result.error.code).toBe(UNKNOWN_ERROR_CODE);
-      expect(result.error.cause).toEqual({
-        reason: "invalid input",
-      });
+      expect(result.error).toEqual({ reason: "invalid input" });
     }
   });
 
@@ -149,8 +136,7 @@ describe("results integration", () => {
     expect(isFailure(result)).toBe(true);
 
     if (isFailure(result)) {
-      expect(result.error).toBeInstanceOf(UnknownError);
-      expect(result.error.cause).toBe(123);
+      expect(result.error).toBe(123);
     }
   });
 

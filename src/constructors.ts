@@ -1,107 +1,66 @@
-import { UnknownError, type UnknownErrorType } from "@/errors/unknown";
-
 // oxlint-disable-next-line no-unused-vars - used by tsdoc
-import type { Failure, Success, Result } from "./types";
+import type { tryResult, tryResultAsync } from "./try";
+import type { Failure, Success, FailureValue } from "./types";
 
 import { isFailure } from "./guards";
 import { normalizeResult } from "./normalize";
-// oxlint-disable-next-line no-unused-vars - used by tsdoc
-import { tryResult, tryResultAsync } from "./try";
+
+type NonNullish = object | string | number | bigint | boolean | symbol;
 
 /**
  * Creates a {@link Success} result from `value`.
  *
- * No normalization is performed: an existing {@link Result} is wrapped as-is.
+ * No normalization is performed: an existing result is wrapped as-is.
  * Use {@link normalizeResult} to flatten nested results.
  *
- * @typeParam T - Type of the successful value.
  * @param value - Value to wrap.
  * @returns A {@link Success} containing `value`.
- * @example
- * const result = success(42);
- * // => { ok: true, value: 42 }
  */
 export function success<T>(value: T): Success<T> {
-  return {
-    ok: true,
-    value,
-  };
+  return { ok: true, value };
 }
 
 /**
- * Creates a {@link Failure} result from `error_`.
+ * Creates a {@link Failure} result from any concrete, non-nullish value.
  *
- * The error instance is preserved as-is.
+ * The original value is preserved as-is; it does not need to extend `Error`.
  *
- * @typeParam E - Error type, constrained to `Error`.
- * @param error_ - Error to wrap.
+ * @param error_ - Failure value to wrap.
  * @returns A {@link Failure} containing `error_`.
- * @example
- * const result = failure(new Error("failed"));
- * // => { ok: false, error: Error("failed") }
  */
-export function failure<E extends Error>(error_: E): Failure<E> {
-  return {
-    error: error_,
-    ok: false,
-  };
+export function failure<E>(error_: E & FailureValue<E>): Failure<E> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The generic constraint is enforced by FailureValue<E>; TypeScript cannot prove the conditional type here.
+  return { error: error_, ok: false } as unknown as Failure<E>;
 }
 
 /**
- * Creates a normalized {@link Failure} from any value.
+ * Creates a failed result from any concrete, non-nullish value.
  *
- * - Existing {@link Failure} values are preserved as-is.
- * - `Error` values are preserved as-is.
- * - Anything else is wrapped in a {@link UnknownError}, keeping the original
- *   value in its `cause` property.
+ * The original value is preserved without requiring it to extend `Error`.
+ * If `cause` is already a {@link Failure}, it is returned unchanged.
  *
- * Designed for `catch` blocks; used internally by {@link tryResult} and
- * {@link tryResultAsync}.
- *
- * @param cause - The cause of the failure.
- * @returns A normalized {@link Failure}.
- * @example
- * error(new Error("failed"));
- * // => { ok: false, error: Error("failed") }
- *
- * error("failed");
- * // => { ok: false, error: UnknownError { cause: "failed" } }
- *
- * error(error(new Error("failed")));
- * // => { ok: false, error: Error("failed") }
+ * @param cause - Failure value to preserve or wrap.
+ * @returns A {@link Failure} containing `cause`, or the existing failure itself.
  */
-export function error<E extends Error>(cause: Failure<E>): Failure<E>;
-export function error<E extends Error>(cause: E): Failure<E>;
-export function error(cause: unknown): Failure<UnknownErrorType>;
-export function error(cause: unknown): Failure {
+export function error<E extends NonNullish>(cause: Failure<E>): Failure<E>;
+export function error<E>(cause: E & FailureValue<E>): Failure<E>;
+export function error(cause: unknown): Failure<NonNullish> {
   if (isFailure(cause)) {
     return cause;
   }
 
-  if (cause instanceof Error) {
-    return failure(cause);
-  }
-
-  return failure(UnknownError({ cause }));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Runtime input is unknown; preserve it as-is while exposing the documented non-nullish contract.
+  return failure(cause as NonNullish);
 }
 
 /**
  * Creates a normalized {@link Result} from `value`.
  *
- * Existing {@link Result} values are normalized recursively:
- * nested results are flattened, and failures are preserved.
+ * Existing result values are normalized recursively: nested results are
+ * flattened and failures are preserved.
  *
- * @param value - Value or {@link Result} to normalize.
- * @returns A normalized {@link Result}.
- * @example
- * ok(42);
- * // => { ok: true, value: 42 }
- *
- * ok(ok(42));
- * // => { ok: true, value: 42 }
- *
- * ok(ok(error(new Error("failed"))));
- * // => { ok: false, error: Error("failed") }
+ * @param value - Value or result to normalize.
+ * @returns A normalized result.
  */
 export function ok<T>(value: T) {
   return normalizeResult(value);

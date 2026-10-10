@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { error, failure, ok, success } from "@/index";
+import { error, failure, ok, success } from "@/constructors";
 
 class CustomError extends Error {}
 
@@ -57,14 +57,13 @@ describe("results constructors", () => {
       }
     });
 
-    it("should wrap non-Error causes in UnknownError", () => {
+    it("should preserve non-Error failure values", () => {
       const result = error("failed");
 
       expect(result.ok).toBe(false);
 
       if (!result.ok) {
-        expect(result.error).toBeInstanceOf(Error);
-        expect(result.error.name).toBe("UnknownError");
+        expect(result.error).toBe("failed");
       }
     });
 
@@ -76,19 +75,14 @@ describe("results constructors", () => {
       expect(result.ok).toBe(false);
 
       if (!result.ok) {
-        expect(result.error.cause).toBe(cause);
+        expect(result.error).toBe(cause);
       }
     });
 
-    it("should preserve an existing Failure", () => {
-      const errorValue = new CustomError("failed");
-      const result = error(error(errorValue));
+    it("should return an existing Failure unchanged", () => {
+      const cause = failure(new CustomError("failed"));
 
-      expect(result.ok).toBe(false);
-
-      if (!result.ok) {
-        expect(result.error).toBe(errorValue);
-      }
+      expect(error(cause)).toBe(cause);
     });
   });
 
