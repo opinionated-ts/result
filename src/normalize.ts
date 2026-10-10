@@ -15,7 +15,6 @@ import { isFailure, isSuccess } from "./guards";
  *
  * The return type mirrors this behavior through {@link Normalize}.
  *
- * @typeParam T - Type of the value to normalize.
  * @param value - Value to normalize.
  * @returns The canonical {@link Result} form of `value`.
  * @example
@@ -32,7 +31,7 @@ export function normalizeResult<T>(value: T): Normalize<T> {
     const inner = value.value;
 
     if (isFailure(inner)) {
-      return inner as Normalize<T>;
+      return inner as unknown as Normalize<T>;
     }
 
     if (isSuccess(inner)) {

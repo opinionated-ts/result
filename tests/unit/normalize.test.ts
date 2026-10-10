@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { failure, normalizeResult, success } from "@/index";
+import { failure, success } from "@/constructors";
+import { normalizeResult } from "@/normalize";
 
 class CustomError extends Error {}
 

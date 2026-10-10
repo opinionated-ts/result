@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { failure, isFailure, isSuccess, success } from "@/index";
+import { failure, success } from "@/constructors";
+import { isFailure, isSuccess } from "@/guards";
 
 describe("result guards", () => {
   describe("isSuccess", () => {

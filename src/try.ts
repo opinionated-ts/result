@@ -1,20 +1,22 @@
 import { error } from "./constructors";
 import { normalizeResult } from "./normalize";
 
+type NonNullish = object | string | number | bigint | boolean | symbol;
+
 /**
- * Runs a synchronous factory, converting its outcome into a {@link Result}.
+ * Runs a synchronous factory and converts its outcome into a {@link Result}.
  *
- * - Returns → normalized with {@link normalizeResult} (an existing {@link Result}
- *   is preserved).
- * - Throws → converted with `error()`: `Error` preserved, anything else wrapped
- *   in a {@link UnknownError}.
+ * - Returns are normalized with {@link normalizeResult}; an existing result is
+ *   preserved and nested successes are flattened.
+ * - Thrown values are preserved as the failure payload, without requiring an
+ *   `Error` instance or an error code.
  *
- * Safe wrapper around code that may throw.
+ * Use this to contain exceptions from synchronous operations and handle them
+ * through the returned result instead of a surrounding `try`/`catch`.
  *
- * @typeParam T - Type of the value returned by `factory`.
  * @param factory - Synchronous function to run.
  * @returns A {@link Success} with the normalized value, or a {@link Failure}
- * with the caught error.
+ *   with the thrown value.
  * @example
  * const result = tryResult(() => JSON.parse(input));
  */
@@ -22,31 +24,31 @@ export function tryResult<T>(factory: () => T) {
   try {
     return normalizeResult(factory());
   } catch (error_) {
-    return error(error_);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Preserve arbitrary JavaScript thrown values; the public Result contract excludes nullish failures.
+    return error(error_ as NonNullish);
   }
 }
 
 /**
- * Runs an async factory, converting its outcome into a {@link Result}.
+ * Runs an async factory and converts its outcome into a {@link Result}.
  *
- * Same semantics as {@link tryResult}, but for promises:
+ * It has the same semantics as {@link tryResult}, but awaits the factory:
  *
- * - Resolves → normalized with {@link normalizeResult} (an existing {@link Result}
- *   is preserved).
- * - Rejects → converted with `error()`: `Error` preserved, anything else wrapped
- *   in a {@link UnknownError}.
+ * - Resolved values are normalized with {@link normalizeResult}.
+ * - Rejected values are preserved as the failure payload, without requiring an
+ *   `Error` instance or an error code.
  *
- * @typeParam T - Type of the value resolved by `factory`.
  * @param factory - Async function to run.
  * @returns A promise of a {@link Success} with the normalized value, or a
- * {@link Failure} with the caught error.
+ *   {@link Failure} with the rejected value.
  * @example
- * const result = await tryResultAsync(() => fetch(url).then((r) => r.json()));
+ * const result = await tryResultAsync(() => fetch(url).then((response) => response.json()));
  */
 export async function tryResultAsync<T>(factory: () => Promise<T>) {
   try {
     return normalizeResult(await factory());
   } catch (error_) {
-    return error(error_);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Preserve arbitrary JavaScript thrown values; the public Result contract excludes nullish failures.
+    return error(error_ as NonNullish);
   }
 }
