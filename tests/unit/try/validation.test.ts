@@ -129,6 +129,7 @@ describe("tryResult validation and precedence", () => {
       () => {
         throw cause;
       },
+      // @ts-expect-error - Mapper must return a valid Result error.
       () => {
         throw maperError;
       },

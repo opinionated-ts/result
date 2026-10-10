@@ -1,4 +1,10 @@
-import type { Mapper, TryResultOptions, TryResultOutput } from "./types";
+import type {
+  ExactFactoryReturn,
+  ExactMapper,
+  Mapper,
+  TryResultOptions,
+  TryResultOutput,
+} from "./types";
 
 import { processFailure, processReturned } from "./shared";
 
@@ -36,16 +42,18 @@ import { processFailure, processReturned } from "./shared";
  * // Success<User> | Failure<InvalidResultError>
  */
 export async function tryResultAsync<T, M extends Mapper | undefined = Mapper>(
-  factory: () => Promise<T>,
-  onError?: M,
+  factory: () => Promise<T & ExactFactoryReturn<T>>,
+  onError?: M & ExactMapper<M>,
   options: TryResultOptions = {},
 ): Promise<TryResultOutput<T, M>> {
   try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Runtime validation normalizes the broader implementation result.
     return processReturned(await factory(), onError, options, tryResultAsync) as TryResultOutput<
       T,
       M
     >;
   } catch (cause) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Runtime validation normalizes the broader implementation result.
     return processFailure(cause, onError, options, tryResultAsync) as TryResultOutput<T, M>;
   }
 }

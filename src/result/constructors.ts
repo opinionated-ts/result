@@ -50,6 +50,16 @@ export function failure<E extends Error>(error_: E): Failure<E> {
   };
 }
 
+type ValidatedErrorCause<T> = T extends ResultError
+  ? ExactCode<T>
+  : T extends Failure<infer E>
+    ? E extends ResultError
+      ? ExactCode<E> extends Error
+        ? Failure<E>
+        : never
+      : unknown
+    : unknown;
+
 /**
  * Creates a normalized {@link Failure} from any value.
  *
@@ -76,9 +86,11 @@ export function failure<E extends Error>(error_: E): Failure<E> {
  * // => { ok: false, error: Error("failed") }
  */
 
-export function error<E extends ResultError>(cause: Failure<E>): Failure<E>;
-export function error<E extends ResultError>(cause: ExactCode<E>): Failure<E>;
-export function error(cause: unknown): Failure<InvalidResultErrorType>;
+export function error<E extends ResultError>(
+  cause: Failure<E> & (ExactCode<E> extends Error ? unknown : never),
+): Failure<E>;
+export function error<E extends ResultError>(cause: E & ExactCode<E>): Failure<E>;
+export function error<T>(cause: T & ValidatedErrorCause<T>): Failure<InvalidResultErrorType>;
 export function error(cause: unknown): Failure {
   if (isFailure(cause)) {
     return cause;
