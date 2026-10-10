@@ -1,243 +1,47 @@
 ---
 name: opinionated-ts-result
-description: "Use when implementing, reviewing, or explaining TypeScript code with `@opinionated-ts/result` for handling errors as typed values instead of throwing, including `ok`, `error`, `isSuccess`, `isFailure`, failure propagation, and exhaustive error handling."
+description: "Use when implementing, reviewing, or explaining TypeScript code with @opinionated-ts/result: typed Result values, constructor semantics, tryResult/tryResultAsync, exact error-code inference, runtime validation, propagation, and exhaustive handling."
 ---
 
 # @opinionated-ts/result
 
-`@opinionated-ts/result` represents expected operation outcomes explicitly as typed `Result` values.
+Use this skill as the entry point for package-specific guidance. Prefer explicit result values over thrown expected errors, preserve exact failure types, and keep runtime behavior distinct from TypeScript's static guarantees.
 
-The API is:
+## Core rules
 
-- `ok(value)` — success.
-- `error(error)` — failure.
-- `isSuccess(result)` — narrows to success.
-- `isFailure(result)` — narrows to failure.
+- Use `ok(value)` to create a normalized result and `error(typedError)` to create a failure.
+- Use `isSuccess()` / `isFailure()` to narrow results.
+- Let TypeScript infer concrete success and failure types; avoid widening them to `Result<T, Error>`.
+- Every typed error should extend `Error` and expose a literal string `code`, preferably `readonly code = "SOME_CODE"`.
+- Do not use `throw` for expected application failures. TypeScript does not include thrown values in a function's return type.
+- At runtime, validation can only check that `code` is a string, not whether its TypeScript type was a literal. Do not rely on runtime acceptance as proof of a precise static contract.
+- Use `tryResult()` / `tryResultAsync()` to contain exceptions or rejections from dependencies and map them to typed operation errors.
+- Propagate failures unchanged unless a layer intentionally changes the public meaning of the failure.
 
-## Result shape
+## Source-of-truth guides
 
-```ts
-type Result<T, E extends Error = Error> = { ok: true; value: T } | { ok: false; error: E };
-```
+- [Getting Started](./references/getting-started.md) — minimal path to creating and consuming results.
+- [Result constructors and runtime behavior](./references/results.md) — `ok`, `error`, `success`, `failure`, normalization, runtime checks, and edge cases.
+- [Try Results](./references/try-results.md) — mapper contracts, fallbacks, nested values, stack inheritance, and synchronous/asynchronous behavior.
+- [Error Flow](./references/error-flow.md) — propagation, translation, and exhaustive handling.
 
-Normally, let `ok()` and `error()` infer the concrete success and failure types.
+Keep this skill as a concise router. Consult the relevant guide for details rather than duplicating its full examples here.
 
-```ts
-function validateUser(user: User) {
-  if (user.blocked) {
-    return error(new UserBlockedError());
-  }
-
-  return ok(user);
-}
-```
-
-Do not explicitly annotate the return type as `Result<...>`.
-
-## Typed errors
-
-A value used as a **typed failure contract** with `error()` must extend `Error` and have an explicitly typed literal `code`. This preserves the exact discriminator in the inferred failure union.
+## Quick example
 
 ```ts
+import { error, ok } from "@opinionated-ts/result";
+
 class UserNotFoundError extends Error {
   readonly code = "NOT_FOUND";
 }
 
-// Or a reusable error that preserves the literal code:
-class UserError<TCode extends string> extends Error {
-  readonly code: TCode;
-
-  constructor(code: TCode) {
-    super();
-    this.code = code;
-  }
+function getUser(id: string) {
+  const user = users.get(id);
+  return user ? ok(user) : error(new UserNotFoundError());
 }
-
-error(new UserNotFoundError());
-error(new UserError("NOT_FOUND"));
-```
-
-Do not pass an unknown or generic caught value as the expected failure:
-
-```ts
-try {
-  // ...
-} catch (cause) {
-  return error(cause);
-}
-```
-
-The diagnostic uses `ErrorCodeMustBeLiteralString` to indicate that the exact error code is required. A literal such as `"NOT_FOUND"`, or a finite literal union, keeps the error discriminator visible to consumers.
-
-At runtime, `error()` is also a normalization boundary:
-
-- Existing `Failure` values are preserved.
-- Existing `Error` values are preserved.
-- Non-Error values are wrapped in `InvalidResultError`.
-- The original non-Error value becomes the `cause` of `InvalidResultError`.
-
-This fallback is useful for unknown thrown values, but it should not replace a concrete expected error in an operation's public contract.
-
-Translate external or generic causes into the specific failure of the current operation:
-
-```ts
-try {
-  const user = await database.findUser(id);
-
-  if (!user) {
-    return error(new UserNotFoundError());
-  }
-
-  return ok(user);
-} catch (cause) {
-  return error(new UserLoadFailedError("Could not load user.", { cause }));
-}
-```
-
-Keep the concrete error union visible through inference.
-
-## Consuming Results
-
-Use the exported guards rather than checking `result.ok` manually:
-
-```ts
-const result = await operation();
-
-if (isSuccess(result)) {
-  return process(result.value);
-}
-
-return handleFailure(result.error);
-```
-
-Propagate failures unchanged when appropriate:
-
-```ts
-const result = await operation();
-
-if (isFailure(result)) {
-  return result;
-}
-
-return process(result.value);
-```
-
-## Propagation and translation
-
-Propagate a failure unchanged when the current layer does not change its meaning:
-
-```ts
-async function getUser(id: string) {
-  const result = await loadUser(id);
-
-  if (isFailure(result)) {
-    return result;
-  }
-
-  return validateUserAccess(result.value);
-}
-```
-
-Translate only when the current layer intentionally changes its meaning:
-
-```ts
-if (isFailure(result)) {
-  return error(
-    new ApplicationLoadError("Unable to load user.", {
-      cause: result.error,
-    }),
-  );
-}
-```
-
-Do not reconstruct or wrap failures without a semantic reason.
-
-## Exhaustive handling
-
-Keep the inferred error union precise until the boundary:
-
-```ts
-if (isFailure(result)) {
-  switch (result.error.code) {
-    case "NOT_FOUND":
-      return handleNotFound(result.error);
-
-    case "BLOCKED":
-      return handleBlocked(result.error);
-
-    case "LOAD_FAILED":
-      return handleLoadFailed(result.error);
-
-    default:
-      result.error.code satisfies never;
-      return handleUnexpectedError(result.error);
-  }
-}
-```
-
-`satisfies never` is a compile-time exhaustiveness check: adding a new error to the union requires a corresponding case.
-
-The runtime fallback is separate protection for values that violate the TypeScript contract, such as untyped code, unsafe casts, malformed values, or incompatible implementations.
-
-At an external boundary, map the final `Result` to the required representation:
-
-```ts
-const result = await getUser(userId);
-
-if (isSuccess(result)) {
-  return Response.json(result, { status: 200 });
-}
-
-logError(result.error);
-
-switch (result.error.code) {
-  case "NOT_FOUND":
-    return Response.json(result, { status: 404 });
-
-  case "BLOCKED":
-    return Response.json(result, { status: 403 });
-
-  case "INTERNAL_LOAD_FAILED": {
-    // Example of translating an internal failure at an application boundary.
-    logger(result.error);
-    const applicationError = new ApplicationLoadError("Unable to load user.");
-    return Response.json(error(applicationError), { status: 500 });
-  }
-
-  default:
-    result.error.code satisfies never;
-
-    return Response.json(
-      error(
-        new UnexpectedApplicationError({
-          cause: result.error,
-        }),
-      ),
-      { status: 500 },
-    );
-}
-```
-
-Expected failures stay inside `Result`; constructors infer concrete types; failures are propagated unchanged unless translation is required; final consumers handle the union exhaustively.
-
-## Flow
-
-```text
-operation
-   ↓
-inferred Result
-   ↓
-propagate / translate
-   ↓
-inferred Result
-   ↓
-boundary
-   ↓
-exhaustive handling
 ```
 
 ## Related & Optionally
-
-Optionally, see the [`@opinionated-ts/result`](https://github.com/opinionated-ts/result) repository for more in-depth guidance about the package, only if this skill does not answer your question or you need additional details.
 
 For typed errors with exact, automatic type inference, optionally pair `@opinionated-ts/result` with `@opinionated-ts/error-factory` when available.

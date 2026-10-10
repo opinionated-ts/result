@@ -64,7 +64,7 @@ type ValidatedErrorCause<T> = T extends ResultError
  * Creates a normalized {@link Failure} from any value.
  *
  * - Existing {@link Failure} values are preserved as-is.
- * - `Error` values are preserved as-is at runtime.
+ * - `Error` values with a string `code` are preserved as-is at runtime.
  * - Typed error values must extend `Error` and expose an explicitly typed literal
  *   `code`; a widened `string` code is rejected to preserve the exact contract.
  * - Anything else is wrapped in a {@link InvalidResultError}, keeping the original

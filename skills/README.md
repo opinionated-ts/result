@@ -1,6 +1,6 @@
 # Install the `opinionated-ts-result` Skill from `@opinionated-ts/result`
 
-This skill teaches your AI coding agents how to use [`@opinionated-ts/result`](https://github.com/opinionated-ts/result) consistently and take advantage of its type-safe error factories.
+This skill teaches your AI coding agents how to use [`@opinionated-ts/result`](https://github.com/opinionated-ts/result) consistently: inferred Result contracts, literal error codes, runtime behavior, and typed failure handling.
 
 Install the `opinionated-ts-result` skill with [Vercel's Skills CLI](https://github.com/vercel-labs/skills).
 

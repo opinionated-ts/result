@@ -7,7 +7,7 @@
 
 Make operation outcomes explicit with **typed `Result` values** instead of hiding expected failures in thrown exceptions.
 
-The important part is not the `Result` shape. It is the contract it gives the caller: **TypeScript can infer exactly what a function can return, including its possible failures.**
+The key benefit is the contract visible to the caller: **TypeScript can infer the success value and the concrete failures an operation returns**, without manually annotating `Result<T, E>`.
 
 > ❤️ If you find this project useful, consider giving the repo a star — it helps support the project.
 
@@ -54,7 +54,7 @@ function getUser(id: string) {
 From outside the function, TypeScript can infer the complete contract:
 
 ```ts
-const result = getUser(id);
+const result = getUser("123");
 ```
 
 In editors like **VS Code**, a **mouse hover** over `result` can show that it contains either the successful `User` value or one of the concrete failures returned by `getUser()`.
@@ -110,9 +110,11 @@ This keeps the final error union precise all the way to the boundary where the a
 
 ## Guides
 
-- [Getting Started](./docs/getting-started.md) — learn the core contract, creation, consumption, propagation, and error translation.
-- [Error Flow](./docs/error-flow.md) — follow typed failures through application layers and handle the final error union exhaustively.
-- [Install the `opinionated-ts-result` skill](https://github.com/opinionated-ts/result/tree/main/skills) — add this package's guidance to your coding agent.
+- [Getting Started](./skills/opinionated-ts-result/references/getting-started.md) — create and consume results.
+- [Result constructors and runtime behavior](./skills/opinionated-ts-result/references/results.md) — `ok`, `error`, `success`, `failure`, validation, and edge cases.
+- [Try Results](./skills/opinionated-ts-result/references/try-results.md) — capture sync/async failures, map causes, and configure stack inheritance.
+- [Error Flow](./skills/opinionated-ts-result/references/error-flow.md) — propagate or translate failures and handle unions exhaustively.
+- [Agent skill](./skills/README.md) — install the self-contained package guidance for your coding agent.
 
 ## Related
 
