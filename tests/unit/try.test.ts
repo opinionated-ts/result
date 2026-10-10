@@ -73,6 +73,37 @@ describe("tryResult", () => {
       expect(result.error).toBe("failed");
     }
   });
+
+  it("should map a thrown value to a custom failure value", () => {
+    const result = tryResult(
+      () => {
+        throw "failed";
+      },
+      (cause) => ({ cause, kind: "load-failed" as const }),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: { cause: "failed", kind: "load-failed" },
+    });
+  });
+
+  it("should inherit the caught Error stack for a mapped Error by default", () => {
+    let cause: Error | undefined;
+    const result = tryResult(
+      () => {
+        cause = new Error("cause");
+        throw cause;
+      },
+      (caught) => new Error("mapped", { cause: caught }),
+    );
+
+    expect(result.ok).toBe(false);
+
+    if (!result.ok && result.error instanceof Error) {
+      expect(result.error.stack).toBe(cause?.stack);
+    }
+  });
 });
 
 describe("tryResultAsync", () => {
@@ -121,6 +152,36 @@ describe("tryResultAsync", () => {
 
     if (!result.ok) {
       expect(result.error).toBe("failed");
+    }
+  });
+
+  it("should map a rejected value to a custom failure value", async () => {
+    const result = await tryResultAsync(
+      async () => {
+        throw "failed";
+      },
+      (cause) => `request failed: ${String(cause)}`,
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "request failed: failed",
+    });
+  });
+
+  it("should inherit the rejected Error stack for a mapped Error by default", async () => {
+    const cause = new Error("cause");
+    const result = await tryResultAsync(
+      async () => {
+        throw cause;
+      },
+      (caught) => new Error("mapped", { cause: caught }),
+    );
+
+    expect(result.ok).toBe(false);
+
+    if (!result.ok && result.error instanceof Error) {
+      expect(result.error.stack).toBe(cause.stack);
     }
   });
 });
