@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { NullishFailureError, tryResult, tryResultAsync } from "@/index";
+import { error, NullishFailureError, tryResult, tryResultAsync } from "@/index";
 
 class CustomError extends Error {}
 
@@ -71,8 +71,8 @@ describe("tryResult", () => {
         tryResult(() => {
           throw cause;
         });
-      } catch (error) {
-        thrown = error;
+      } catch (caughtError) {
+        thrown = caughtError;
       }
 
       expect(thrown).toBeInstanceOf(NullishFailureError);
@@ -107,6 +107,50 @@ describe("tryResult", () => {
       ok: false,
       error: { cause: "failed", kind: "load-failed" },
     });
+  });
+
+  it("should preserve a Failure returned by the mapper", () => {
+    const existingFailure = error("already failed");
+    const result = tryResult(
+      () => {
+        throw new Error("operation failed");
+      },
+      () => existingFailure,
+    );
+
+    expect(result).toBe(existingFailure);
+  });
+
+  it("should propagate exceptions thrown by the mapper", () => {
+    const mapperError = new Error("mapper failed");
+
+    expect(() =>
+      tryResult(
+        () => {
+          throw new Error("operation failed");
+        },
+        () => {
+          throw mapperError;
+        },
+      ),
+    ).toThrow(mapperError);
+  });
+
+  it("should not inherit the caught Error stack when disabled", () => {
+    const cause = new Error("cause");
+    const result = tryResult(
+      () => {
+        throw cause;
+      },
+      (caught) => new Error("mapped", { cause: caught }),
+      { inheritStack: false },
+    );
+
+    expect(result.ok).toBe(false);
+
+    if (!result.ok && result.error instanceof Error) {
+      expect(result.error.stack).not.toBe(cause.stack);
+    }
   });
 
   it("should inherit the caught Error stack for a mapped Error by default", () => {
@@ -203,6 +247,50 @@ describe("tryResultAsync", () => {
       ok: false,
       error: "request failed: failed",
     });
+  });
+
+  it("should preserve a Failure returned by the mapper", async () => {
+    const existingFailure = error("already failed");
+    const result = await tryResultAsync(
+      async () => {
+        throw new Error("operation failed");
+      },
+      () => existingFailure,
+    );
+
+    expect(result).toBe(existingFailure);
+  });
+
+  it("should propagate exceptions thrown by the mapper", async () => {
+    const mapperError = new Error("mapper failed");
+
+    await expect(
+      tryResultAsync(
+        async () => {
+          throw new Error("operation failed");
+        },
+        () => {
+          throw mapperError;
+        },
+      ),
+    ).rejects.toBe(mapperError);
+  });
+
+  it("should not inherit the rejected Error stack when disabled", async () => {
+    const cause = new Error("cause");
+    const result = await tryResultAsync(
+      async () => {
+        throw cause;
+      },
+      (caught) => new Error("mapped", { cause: caught }),
+      { inheritStack: false },
+    );
+
+    expect(result.ok).toBe(false);
+
+    if (!result.ok && result.error instanceof Error) {
+      expect(result.error.stack).not.toBe(cause.stack);
+    }
   });
 
   it("should inherit the rejected Error stack for a mapped Error by default", async () => {
