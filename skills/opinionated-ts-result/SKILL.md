@@ -66,6 +66,21 @@ try {
 
 Keep the concrete error union visible through inference.
 
+## Adapting exception-based operations
+
+Use `tryResult()` or `tryResultAsync()` when an operation can throw or reject:
+
+```ts
+const result = await tryResultAsync(
+  () => database.findUser(id),
+  (cause) => new UserLoadFailedError("Could not load user.", { cause }),
+);
+```
+
+The optional mapper receives the original caught value as `unknown`. Its return value is passed to `error()`, so an existing `Failure` is preserved. If the mapper throws, its exception propagates. Without a mapper, non-nullish thrown/rejected values are preserved as failures; `null` and `undefined` cause `NullishFailureError` to be thrown.
+
+When both the caught value and the mapped value are `Error` instances, the helper copies the original error stack to the mapped error by default if the original stack exists. Pass `{ inheritStack: false }` as the third argument to disable this behavior. The mapper must return a concrete, non-nullish failure value; TypeScript checks this contract, but the helper does not validate values supplied through untyped code or unsafe casts.
+
 ## Consuming Results
 
 Use the exported guards rather than checking `result.ok` manually:

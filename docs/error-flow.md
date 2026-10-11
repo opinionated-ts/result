@@ -125,6 +125,7 @@ return Response.json(result, {
 
 The same result can instead become a CLI exit code, UI state, message, or another external representation without changing the operation's failure contract.
 
-## Next steps
+## Related Guides
 
+- [Try Helpers](./try-results.md) — adapt exception-based operations to `Result` and optionally translate caught values.
 - [Install the `opinionated-ts-result` skill](https://github.com/opinionated-ts/result/tree/main/skills) — add package-specific guidance to your coding agent.

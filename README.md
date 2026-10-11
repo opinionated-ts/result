@@ -110,6 +110,7 @@ This keeps the final error union precise all the way to the boundary where the a
 
 - [Getting Started](./docs/getting-started.md) — learn the core contract, creation, consumption, propagation, and error translation.
 - [Error Flow](./docs/error-flow.md) — follow typed failures through application layers and handle the final error union exhaustively.
+- [Try Helpers](./docs/try-results.md) — adapt throwing and rejecting operations to `Result`, with optional failure mapping.
 - [Install the `opinionated-ts-result` skill](https://github.com/opinionated-ts/result/tree/main/skills) — add this package's guidance to your coding agent.
 
 ## Related

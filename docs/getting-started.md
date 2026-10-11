@@ -133,6 +133,7 @@ try {
 
 Translate it into the specific failure that callers need to handle. This keeps the inferred error union concrete instead of widening it to an unknown or generic error.
 
-## Next steps
+## Related Guides
 
 - [Error Flow](./error-flow.md) — compose results across functions without losing their concrete failure types.
+- [Try Helpers](./try-results.md) — adapt throwing or rejecting operations and translate caught values into concrete failures.
