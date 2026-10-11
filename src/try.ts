@@ -1,6 +1,7 @@
 import type { Failure, FailureValue, Normalize } from "./types";
 
 import { error } from "./constructors";
+import { NullishFailureError } from "./errors/nullish-failure";
 import { normalizeResult } from "./normalize";
 
 export type NonNullish = object | string | number | bigint | boolean | symbol;
@@ -51,7 +52,11 @@ export function tryResult<T, E>(
     return normalizeResult(factory());
   } catch (cause) {
     if (!mapper) {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The Result failure contract excludes nullish values; preserve arbitrary thrown values.
+      if (cause === null || cause === undefined) {
+        throw new NullishFailureError(cause);
+      }
+
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Nullish values are rejected above; preserve other thrown values.
       return error(cause as NonNullish);
     }
 
@@ -107,7 +112,11 @@ export async function tryResultAsync<T, E>(
     return normalizeResult(await factory());
   } catch (cause) {
     if (!mapper) {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The Result failure contract excludes nullish values; preserve arbitrary rejected values.
+      if (cause === null || cause === undefined) {
+        throw new NullishFailureError(cause);
+      }
+
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Nullish values are rejected above; preserve other rejected values.
       return error(cause as NonNullish);
     }
 

@@ -1,3 +1,5 @@
+export { NULLISH_FAILURE_ERROR_MESSAGE, NullishFailureError } from "./errors/nullish-failure";
+
 export { error, ok } from "./constructors";
 
 export { isFailure, isSuccess } from "./guards";

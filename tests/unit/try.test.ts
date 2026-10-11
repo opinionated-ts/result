@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { tryResult, tryResultAsync } from "@/index";
+import { NullishFailureError, tryResult, tryResultAsync } from "@/index";
 
 class CustomError extends Error {}
 
@@ -61,6 +61,27 @@ describe("tryResult", () => {
       expect(result.error).toBe(errorValue);
     }
   });
+
+  it.each([null, undefined])(
+    "should throw NullishFailureError when throwing %s without a mapper",
+    (cause) => {
+      let thrown: unknown;
+
+      try {
+        tryResult(() => {
+          throw cause;
+        });
+      } catch (error) {
+        thrown = error;
+      }
+
+      expect(thrown).toBeInstanceOf(NullishFailureError);
+      expect(thrown).toMatchObject({
+        message: `Expected a non-nullish failure value, but received ${String(cause)}.`,
+        cause,
+      });
+    },
+  );
 
   it("should preserve a non-Error thrown value", () => {
     const result = tryResult(() => {
@@ -142,6 +163,21 @@ describe("tryResultAsync", () => {
       expect(result.error).toBe(errorValue);
     }
   });
+
+  it.each([null, undefined])(
+    "should reject with NullishFailureError when rejecting %s without a mapper",
+    async (cause) => {
+      await expect(
+        tryResultAsync(async () => {
+          throw cause;
+        }),
+      ).rejects.toMatchObject({
+        name: "NullishFailureError",
+        message: `Expected a non-nullish failure value, but received ${String(cause)}.`,
+        cause,
+      });
+    },
+  );
 
   it("should preserve a rejected non-Error value", async () => {
     const result = await tryResultAsync(async () => {
