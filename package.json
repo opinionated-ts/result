@@ -1,10 +1,36 @@
 {
   "name": "@opinionated-ts/result",
+  "keywords": [
+    "error-handling",
+    "functional-error-handling",
+    "result",
+    "result-pattern",
+    "result-type",
+    "type-inference",
+    "type-safe",
+    "typed-results"
+  ],
+  "homepage": "https://github.com/opinionated-ts/result#readme",
+  "bugs": {
+    "url": "https://github.com/opinionated-ts/result/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Opinionated TS",
+    "url": "https://github.com/opinionated-ts"
+  },
+  "contributors": [
+    {
+      "name": "Daniel A. Hernández Ochoa",
+      "url": "https://github.com/DanhezCode"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/opinionated-ts/result.git"
   },
   "files": [
+    "docs",
     "dist",
     "README.md",
     "LICENSE"
