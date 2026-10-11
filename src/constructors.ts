@@ -72,13 +72,12 @@ export function failure<E>(error_: E & FailureValue<E>): Failure<E> {
  */
 export function error<E extends NonNullish>(cause: Failure<E>): Failure<E>;
 export function error<E>(cause: E & FailureValue<E>): Failure<E>;
-export function error(cause: unknown): Failure<NonNullish> {
+export function error(cause: NonNullish | Failure<NonNullish>): Failure<NonNullish> {
   if (isFailure(cause)) {
     return cause;
   }
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Runtime input is unknown; preserve it as-is while exposing the documented non-nullish contract.
-  return failure(cause as NonNullish);
+  return failure(cause);
 }
 
 /**
